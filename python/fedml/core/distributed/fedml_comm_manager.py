@@ -75,7 +75,7 @@ class FedMLCommManager(Observer):
             time_profiler = TimeProfiler()
             mem_profiler = MemoryProfiler()
             
-            @functools.wraps()
+            @functools.wraps(None)
             def wrapper():
                 mem_profiler.start()
                 time_profiler.start()
@@ -86,7 +86,7 @@ class FedMLCommManager(Observer):
                     time_profiler.stop()
                     mem_profiler.stop()
             
-            wrapper()
+            wrapper(None)
             if msg_type in [2, 3]:
                 
                 mems = mem_profiler.events
