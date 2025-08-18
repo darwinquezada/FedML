@@ -2,7 +2,7 @@ import json
 import logging
 from abc import abstractmethod
 
-from python.fedml.core.common.load_config import LoadConfig
+from ..common.load_config import LoadConfig
 
 from .communication.base_com_manager import BaseCommunicationManager
 from .communication.constants import CommunicationConstants
