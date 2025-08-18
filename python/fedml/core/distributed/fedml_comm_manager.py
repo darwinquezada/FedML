@@ -1,16 +1,20 @@
+import functools
 import json
 import logging
 from abc import abstractmethod
 
 from ..common.load_config import LoadConfig
+from ..common.profiler import MemoryProfiler, TimeProfiler
 
 from .communication.base_com_manager import BaseCommunicationManager
 from .communication.constants import CommunicationConstants
 from .communication.observer import Observer
 from ..mlops.mlops_configs import MLOpsConfigs
 import time
+from datetime import datetime
 from pathlib import Path
 import os
+import csv
 
 cwd = Path.cwd()
 print("Current working directory:", cwd)
@@ -67,10 +71,68 @@ class FedMLCommManager(Observer):
             )
         try:
             logging.info("Message Type -- DQ: {}".format(msg_type))
-            time_init = time.time()
-            handler_callback_func = self.message_handler_dict[msg_type]
-            handler_callback_func(msg_params)
-            logging.info("receive_message time: {}".format(time.time() - time_init))
+            
+            time_profiler = TimeProfiler()
+            mem_profiler = MemoryProfiler()
+            
+            @functools.wraps()
+            def wrapper():
+                mem_profiler.start()
+                time_profiler.start()
+                try:
+                    handler_callback_func = self.message_handler_dict[msg_type]
+                    handler_callback_func(msg_params)
+                finally:
+                    time_profiler.stop()
+                    mem_profiler.stop()
+            
+            wrapper()
+            if msg_type in [2, 3]:
+                
+                mems = mem_profiler.events
+                times = time_profiler.events
+                avg_mem = sum(mems) / len(mems)
+                avg_time = sum(times) / len(times)
+                
+                logging.info("Time taken to handle message type {}: {}".format(msg_type, avg_time))
+                logging.info("Memory used to handle message type {}: {}".format(msg_type, avg_mem))
+                
+                filename = os.path.join(results_dir, "network.csv")
+                write_header = (
+                    not os.path.exists(filename) or os.stat(filename).st_size == 0
+                )
+
+                with open(filename, "a", newline="") as csvfile:
+                    writer = csv.writer(csvfile)
+                    if write_header:
+                        writer.writerow(
+                            [
+                                "timestamp",
+                                "message_type",
+                                "sync_time_sec",
+                                "sync_data_bytes",
+                                "sync_memory_bytes",
+                                "model_param_count",
+                                "model_param_bytes",
+                            ]
+                        )
+
+                    writer.writerow(
+                        [
+                            datetime.now().isoformat(),
+                            msg_type,
+                            round(avg_time, 5),
+                            0,
+                            int(avg_mem),
+                            0,  # number of parameters
+                            0,  # bytes
+                        ]
+                    )
+                
+                
+            # time_init = time.time()
+            
+            # logging.info("receive_message time: {}".format(time.time() - time_init))
         except KeyError:
             raise Exception(
                 "KeyError. msg_type = {}. Please check whether you launch the server or client with the correct args.rank".format(
