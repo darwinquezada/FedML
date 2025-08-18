@@ -103,7 +103,9 @@ class GRPCCommManager(BaseCommunicationManager):
 
         tick = time.time()
         stub.sendMessage(request)
+        logging.info("Response time: {}".format(time.time() - tick))
         MLOpsProfilerEvent.log_to_wandb({"Comm/send_delay": time.time() - tick})
+        
         logging.debug("sent successfully")
         channel.close()
 

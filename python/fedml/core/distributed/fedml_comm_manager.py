@@ -6,6 +6,7 @@ from .communication.base_com_manager import BaseCommunicationManager
 from .communication.constants import CommunicationConstants
 from .communication.observer import Observer
 from ..mlops.mlops_configs import MLOpsConfigs
+import time
 
 
 class FedMLCommManager(Observer):
@@ -41,8 +42,10 @@ class FedMLCommManager(Observer):
                 % (str(msg_type), msg_params.get_sender_id(), msg_params.get_receiver_id())
             )
         try:
+            time_init = time.time()
             handler_callback_func = self.message_handler_dict[msg_type]
             handler_callback_func(msg_params)
+            logging.info("receive_message time: {}".format(time.time() - time_init))
         except KeyError:
             raise Exception(
                 "KeyError. msg_type = {}. Please check whether you launch the server or client with the correct args.rank".format(
@@ -51,7 +54,9 @@ class FedMLCommManager(Observer):
             )
 
     def send_message(self, message):
+        time_init = time.time()
         self.com_manager.send_message(message)
+        logging.info("send_message time: {}".format(time.time() - time_init))
 
     def send_message_json(self, topic_name, json_message):
         self.com_manager.send_message_json(topic_name, json_message)

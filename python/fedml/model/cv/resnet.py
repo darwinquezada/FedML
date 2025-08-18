@@ -154,11 +154,9 @@ class ResNet(nn.Module):
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
 
-        self.inplanes = 16
+        self.inplanes = 64  # Changed from 16 to 64 for standard ResNet-50
         self.dilation = 1
         if replace_stride_with_dilation is None:
-            # each element in the tuple indicates if we should replace
-            # the 2x2 stride with a dilated convolution instead
             replace_stride_with_dilation = [False, False, False]
         if len(replace_stride_with_dilation) != 3:
             raise ValueError(
@@ -169,26 +167,28 @@ class ResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
         self.conv1 = nn.Conv2d(
-            3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False
+            3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False  # Changed for standard ResNet-50
         )
-        self.bn1 = nn.BatchNorm2d(self.inplanes)
+        self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
-        # self.maxpool = nn.MaxPool2d()
-        self.layer1 = self._make_layer(block, 16, layers[0])
-        self.layer2 = self._make_layer(block, 32, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 64, layers[2], stride=2)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)  # Added for standard ResNet-50
+        
+        self.layer1 = self._make_layer(block, 64, layers[0])
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)  # Added fourth layer
+        
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(64 * block.expansion, num_classes)
+        self.fc = nn.Linear(512 * block.expansion, num_classes)
         self.KD = KD
+        
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
-        # Zero-initialize the last BN in each residual branch,
-        # so that the residual branch starts with zeros, and each residual block behaves like an identity.
-        # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
+
         if zero_init_residual:
             for m in self.modules():
                 if isinstance(m, Bottleneck):
@@ -240,15 +240,19 @@ class ResNet(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
-        x = self.relu(x)  # B x 16 x 32 x 32
-        x = self.layer1(x)  # B x 16 x 32 x 32
-        x = self.layer2(x)  # B x 32 x 16 x 16
-        x = self.layer3(x)  # B x 64 x 8 x 8
+        x = self.relu(x)
+        x = self.maxpool(x)
 
-        x = self.avgpool(x)  # B x 64 x 1 x 1
-        x_f = x.view(x.size(0), -1)  # B x 64
-        x = self.fc(x_f)  # B x num_classes
-        if self.KD == True:
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+
+        x = self.avgpool(x)
+        x_f = x.view(x.size(0), -1)
+        x = self.fc(x_f)
+        
+        if self.KD:
             return x_f, x
         else:
             return x
@@ -293,6 +297,32 @@ def resnet44(class_num, pretrained=False, path=None, **kwargs):
         raise NotImplementedError
     return model
 
+def resnet50(class_num, pretrained=False, path=None, **kwargs):
+    """
+    Constructs a ResNet-50 model.
+    
+    Args:
+        class_num (int): Number of output classes
+        pretrained (bool): If True, returns a model pre-trained
+        path (str): Path to pretrained weights
+        **kwargs: Additional arguments for ResNet
+    """
+    # ResNet-50 uses [3, 4, 6, 3] layers with Bottleneck blocks
+    model = ResNet(Bottleneck, [3, 4, 6, 3], class_num, **kwargs)
+    
+    if pretrained:
+        checkpoint = torch.load(path, map_location=torch.device("cpu"))
+        state_dict = checkpoint["state_dict"]
+
+        from collections import OrderedDict
+
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            name = k.replace("module.", "")
+            new_state_dict[name] = v
+
+        model.load_state_dict(new_state_dict)
+    return model
 
 def resnet56(class_num, pretrained=False, path=None, **kwargs):
     """

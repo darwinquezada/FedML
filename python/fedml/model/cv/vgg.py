@@ -6,6 +6,8 @@ import torch.nn as nn
 
 __all__ = [
     "VGG",
+    "vgg6",
+    "vgg8",
     "vgg11",
     "vgg11_bn",
     "vgg13",
@@ -75,6 +77,8 @@ def make_layers(cfg, batch_norm=False):
 
 
 cfgs = {
+    "A6": [64, "M", 128, "M",  256, "M"],
+    "A8": [64, 64, "M", 128, 128, "M",  256, 256, "M"],
     "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
     "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
     "D": [
@@ -122,6 +126,23 @@ cfgs = {
     ],
 }
 
+def vgg6():
+    r"""VGG 6-layer model (configuration "A") from
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`._
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return VGG(make_layers(cfgs["A6"]))
+
+def vgg8():
+    r"""VGG 8-layer model (configuration "A") from
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`._
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return VGG(make_layers(cfgs["A8"]))
 
 def vgg11():
     r"""VGG 11-layer model (configuration "A") from

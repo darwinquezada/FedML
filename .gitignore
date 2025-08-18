@@ -61,6 +61,9 @@ data/cifar10/*-python
 data/cifar100/*-python
 data/cinic10/
 
+./env
+env
+
 data/MNIST/train
 data/MNIST/test
 data/shakespeare/train
