@@ -2,12 +2,36 @@ import json
 import logging
 from abc import abstractmethod
 
+from python.fedml.core.common.load_config import LoadConfig
+
 from .communication.base_com_manager import BaseCommunicationManager
 from .communication.constants import CommunicationConstants
 from .communication.observer import Observer
 from ..mlops.mlops_configs import MLOpsConfigs
 import time
+from pathlib import Path
+import os
 
+cwd = Path.cwd()
+print("Current working directory:", cwd)
+
+# Load configuration
+config = LoadConfig(os.path.join(cwd, "pyproject.toml"))
+fl = config.get_fl_config()
+nn = config.get_nn_config()
+test = config.get_test_config()
+network = config.get_network_config()
+
+results_dir = os.path.join(
+    cwd,
+    "results",
+    "FLOWER",
+    nn.get("model"),
+    test.get("dataset"),
+    network.get("technology"),
+    network.get("protocol"),
+)
+os.makedirs(results_dir, exist_ok=True)
 
 class FedMLCommManager(Observer):
     def __init__(self, args, comm=None, rank=0, size=0, backend="MPI"):
@@ -42,6 +66,7 @@ class FedMLCommManager(Observer):
                 % (str(msg_type), msg_params.get_sender_id(), msg_params.get_receiver_id())
             )
         try:
+            logging.info("Message Type -- DQ: {}".format(msg_type))
             time_init = time.time()
             handler_callback_func = self.message_handler_dict[msg_type]
             handler_callback_func(msg_params)
