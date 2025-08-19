@@ -15,7 +15,7 @@ from fedml.model.linear.lr import LogisticRegression
 from fedml.model.linear.lr_cifar10 import LogisticRegression_Cifar10
 from fedml.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow, RNN_FedShakespeare
 from fedml.model.cv.mobilenet_v2 import MobileNetV2
-from python.fedml.model.cv.vgg_all import vgg6, vgg8
+from fedml.model.cv.vgg_all import vgg6, vgg8
 
 
 def create(args, output_dim):
