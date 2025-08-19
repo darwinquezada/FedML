@@ -16,6 +16,7 @@ from fedml.model.linear.lr_cifar10 import LogisticRegression_Cifar10
 from fedml.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow, RNN_FedShakespeare
 from fedml.model.cv.resnet_all import resnet50
 from fedml.model.cv.vgg import vgg6, vgg8
+from fedml.model.cv.mobilenet_v2 import MobileNetV2
 
 
 def create(args, output_dim):
@@ -73,6 +74,9 @@ def create(args, output_dim):
     elif model_name == "mobilenet_v3":
         """model_mode \in {LARGE: 5.15M, SMpALL: 2.94M}"""
         model = MobileNetV3(model_mode="LARGE")
+    elif model_name == "MOBILENET":
+        """model_mode \in {LARGE: 5.15M, SMpALL: 2.94M}"""
+        model = MobileNetV2(input_shape=(3, 32, 32), num_classes=output_dim)
     elif model_name == "efficientnet":
         model = EfficientNet()
     elif model_name == "darts" and args.dataset == "cifar10":
