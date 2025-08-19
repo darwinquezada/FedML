@@ -6,7 +6,7 @@ class MobileNetV2(nn.Module):
     """MobileNetV2 wrapper that adapts to dynamic input shapes and channels."""
 
     def __init__(self, input_shape=(3, 32, 32), num_classes=10):
-        super(MobileNet, self).__init__()
+        super(MobileNetV2, self).__init__()
 
         in_channels = input_shape[0]
         self.base_model = models.mobilenet_v2(pretrained=True)
