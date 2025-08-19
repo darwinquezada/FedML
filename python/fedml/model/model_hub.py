@@ -76,7 +76,7 @@ def create(args, output_dim):
         model = MobileNetV3(model_mode="LARGE")
     elif model_name == "MOBILENET":
         """model_mode \in {LARGE: 5.15M, SMpALL: 2.94M}"""
-        model = MobileNetV2(input_shape=(3, 32, 32), num_classes=output_dim)
+        model = MobileNetV2(class_num=output_dim)
     elif model_name == "efficientnet":
         model = EfficientNet()
     elif model_name == "darts" and args.dataset == "cifar10":
