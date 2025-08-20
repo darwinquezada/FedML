@@ -76,7 +76,7 @@ class GRPCCommManager(BaseCommunicationManager):
         logging.info("grpc server started. Listening on port " + str(port))
 
     def send_message(self, msg: Message):
-        logging.info("msg = {}".format(msg))
+        logging.info("msg = {}".format(msg.to_json()))
         # payload = msg.to_json()
 
         logging.info("pickle.dumps(msg) START")
