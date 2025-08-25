@@ -29,7 +29,7 @@ network = config.get_network_config()
 results_dir = os.path.join(
     cwd,
     "results",
-    "FLOWER",
+    "FEDML",
     nn.get("model"),
     test.get("dataset"),
     network.get("technology"),
