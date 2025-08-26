@@ -77,7 +77,7 @@ class MobileNetV2(nn.Module):
         self.num_classes = num_classes
         
         # First layer configuration
-        input_channel = 32
+        input_channel = 1
         last_channel = 1280
         
         # MobileNetV2 architecture configuration
