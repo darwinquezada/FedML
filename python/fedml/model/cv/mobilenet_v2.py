@@ -103,8 +103,9 @@ class MobileNetV2(nn.Module):
         self.apply(_weights_init)
 
     def forward(self, x):
-        x = self.features(x)                   # [batch, C, H, W]
-        x = F.adaptive_avg_pool2d(x, (1, 1))   # [batch, C, 1, 1]
-        x = torch.flatten(x, 1)                # [batch, C]
-        x = self.classifier(x)                 # [batch, num_classes]
-        return x
+        if x.dim() == 2:  # [batch, 784]
+            x = x.view(x.size(0), 1, 28, 28)
+        x = self.features(x)
+        x = F.adaptive_avg_pool2d(x, (1, 1))
+        x = torch.flatten(x, 1)
+        return self.classifier(x)
