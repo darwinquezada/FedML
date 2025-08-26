@@ -74,7 +74,7 @@ def create(args, output_dim):
         """model_mode \in {LARGE: 5.15M, SMpALL: 2.94M}"""
         model = MobileNetV3(model_mode="LARGE")
     elif model_name == "MOBILENET":
-        """model_mode \in {LARGE: 5.15M, SMpALL: 2.94M}"""
+        logging.info("MobileNet - DQ")
         model = MobileNetV2(num_classes=output_dim)
     elif model_name == "efficientnet":
         model = EfficientNet()
