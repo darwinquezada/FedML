@@ -56,9 +56,9 @@ class InvertedResidual(nn.Module):
         else:
             return self.conv(x)
 
-class MobileNetV2_MNIST(nn.Module):
+class MobileNetV2(nn.Module):
     def __init__(self, num_classes=10, width_mult=1.0, dropout_rate=0.2):
-        super(MobileNetV2_MNIST, self).__init__()
+        super(MobileNetV2, self).__init__()
         input_channel = 16
         last_channel = 128
 
